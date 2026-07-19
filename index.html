@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Arab by Ahlan Akademi - Bimbel Bahasa Arab Online Remaja</title>
+    
+    <!-- Google Fonts: Space Grotesk & Poppins & Scheherazade New -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&family=Scheherazade+New:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons for beautiful visual elements -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- React & Babel CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            p1: '#185d6b', // Primer 1: Header, background besar, dominan
+                            p2: '#168499', // Primer 2: Tombol utama, highlight, CTA utama
+                            s1: '#53bcd3', // Sekunder 1: Pendukung, ikon, garis, badge
+                            s2: '#E67E22', // Sekunder 2: Aksen tambahan/oranye segar (max 15%)
+                            s3: '#f7fdff', // Sekunder 3: Background terang / light slate
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        grotesk: ['Hanken Grotesk', 'sans-serif'],
+                        arabic: ['Scheherazade New', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Smooth transition for modal & alerts */
+        .modal-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        /* Mobile safe bottom padding for floating button */
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* --- SCROLL REVEAL (fade + rise saat di-scroll) --- */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: opacity, transform;
+        }
+        .reveal-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal-on-scroll {
+                opacity: 1 !important;
+                transform: none !important;
+                transition: none !important;
+            }
+        }
+
+        /* --- HERO CONVERSATION ANIMATION --- */
+        @keyframes bubblePop {
+            0%   { opacity: 0; transform: translateY(12px) scale(0.7) rotate(-3deg); }
+            55%  { opacity: 1; transform: translateY(-3px) scale(1.06) rotate(1deg); }
+            75%  { transform: translateY(1px) scale(0.98) rotate(-0.5deg); }
+            100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+        }
+        .bubble-pop {
+            animation: bubblePop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            transform-origin: bottom center;
+        }
+        @keyframes bubbleSway {
+            0%, 100% { transform: rotate(-0.6deg); }
+            50%      { transform: rotate(0.6deg); }
+        }
+        .bubble-sway {
+            animation: bubbleSway 2.6s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+        @keyframes talkBob {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-7px); }
+        }
+        .talk-bob { animation: talkBob 0.9s ease-in-out infinite; }
+        @keyframes idleFloat {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-3px); }
+        }
+        .idle-float { animation: idleFloat 3.5s ease-in-out infinite; }
+        @keyframes waveHand {
+            0%, 100% { transform: rotate(0deg); }
+            25%      { transform: rotate(18deg); }
+            75%      { transform: rotate(-8deg); }
+        }
+        .wave-hand { transform-origin: bottom center; animation: waveHand 0.7s ease-in-out infinite; }
+
+        /* --- HOVER MICRO-INTERACTION untuk kartu di semua halaman ---
+           Pakai properti `translate` (bukan `transform`) supaya tidak bentrok
+           dengan animasi reveal-on-scroll yang memakai `transform`. */
+        .ui-hover {
+            transition: translate 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                        box-shadow 0.3s ease,
+                        scale 0.3s ease;
+            cursor: default;
+        }
+        .ui-hover:hover {
+            translate: 0 -6px;
+            scale: 1.015;
+            box-shadow: 0 20px 34px -14px rgba(22, 132, 153, 0.40);
+            z-index: 5;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .ui-hover:hover { translate: none; scale: 1; }
+        }
+
+        /* --- TOMBOL GRADIEN BERANIMASI (Amankan Slot) --- */
+        @keyframes gradientShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes sheen {
+            0%   { left: -70%; }
+            45%  { left: 130%; }
+            100% { left: 130%; }
+        }
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(90deg, #E67E22, #f5a24d, #E67E22, #168499, #E67E22);
+            background-size: 300% 100%;
+            animation: gradientShift 5s ease infinite;
+            box-shadow: 0 10px 24px -6px rgba(230, 126, 34, 0.55);
+        }
+        .btn-glow::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -70%;
+            width: 45%; height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+            transform: skewX(-20deg);
+            animation: sheen 3.8s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .btn-glow:hover {
+            animation-duration: 2s;
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 16px 30px -6px rgba(230, 126, 34, 0.65);
+        }
+        .btn-glow:active { transform: translateY(0) scale(0.97); }
+
+        /* --- KOTAK HARGA DENGAN CAHAYA BERPUTAR --- */
+        @keyframes spinLight {
+            to { transform: rotate(360deg); }
+        }
+        .glow-box {
+            position: relative;
+            border-radius: 1rem;
+            overflow: hidden;
+            isolation: isolate;
+        }
+        .glow-box::before {
+            content: '';
+            position: absolute;
+            z-index: -2;
+            top: 50%; left: 50%;
+            width: 220%; height: 220%;
+            transform-origin: center;
+            background: conic-gradient(from 0deg,
+                transparent 0deg,
+                #53bcd3 40deg,
+                #eafaff 70deg,
+                #53bcd3 100deg,
+                transparent 150deg,
+                transparent 360deg);
+            translate: -50% -50%;
+            animation: spinLight 4.5s linear infinite;
+        }
+        .glow-box::after {
+            content: '';
+            position: absolute;
+            z-index: -1;
+            inset: 3px;
+            border-radius: 0.8rem;
+            background: linear-gradient(135deg, #185d6b 0%, #168499 55%, #2ba0bd 100%);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .glow-box::before { animation: none; }
+        }
+    </style>
+</head>
+<body class="bg-brand-s3 text-slate-800 font-sans antialiased selection:bg-brand-s1 selection:text-white">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useLayoutEffect, useRef } = React;
+
+        function App() {
+            const [currentPage, setCurrentPage] = useState('home'); // home, program, tentang, guru, kontak
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+            const [showPromoPopup, setShowPromoPopup] = useState(false);
+            const [showStickyBanner, setShowStickyBanner] = useState(true);
+            const [selectedProgramTab, setSelectedProgramTab] = useState('reguler'); // reguler, privat
+
+            // Trigger Promo Popup on Load (1.5 seconds)
+            useEffect(() => {
+                const timer = setTimeout(() => {
+                    const hasClosedPopup = sessionStorage.getItem('promoClosed');
+                    if (!hasClosedPopup) {
+                        setShowPromoPopup(true);
+                    }
+                }, 1500);
+                return () => clearTimeout(timer);
+            }, []);
+
+            const closePopup = () => {
+                setShowPromoPopup(false);
+                sessionStorage.setItem('promoClosed', 'true');
+            };
+
+            // Scroll-reveal: fade + rise setiap section/kartu saat masuk viewport.
+            // useLayoutEffect dipakai supaya class 'reveal-on-scroll' terpasang
+            // sebelum browser paint (biar gak ada kedip). Re-run tiap ganti halaman.
+            useLayoutEffect(() => {
+                const nodes = Array.from(document.querySelectorAll(
+                    'main > div > section, main > div > div, footer > div'
+                ));
+                if (nodes.length === 0) return;
+
+                nodes.forEach((el) => el.classList.add('reveal-on-scroll'));
+
+                if (!('IntersectionObserver' in window)) {
+                    nodes.forEach((el) => el.classList.add('is-visible'));
+                    return;
+                }
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+                nodes.forEach((el) => observer.observe(el));
+
+                // Hover micro-interaction: pasang ke kartu utama tiap halaman.
+                // Hanya kartu terluar (bukan yang bersarang) supaya tidak dobel gerak.
+                const cardCandidates = Array.from(document.querySelectorAll(
+                    'main [class*="bg-white"][class*="rounded-"][class*="shadow"]'
+                ));
+                const hoverCards = [];
+                cardCandidates.forEach((el) => {
+                    if (el.classList.contains('no-hover')) return;
+                    if (el.parentElement && el.parentElement.closest('.ui-hover')) return;
+                    el.classList.add('ui-hover');
+                    hoverCards.push(el);
+                });
+
+                return () => {
+                    observer.disconnect();
+                    nodes.forEach((el) => el.classList.remove('reveal-on-scroll', 'is-visible'));
+                    hoverCards.forEach((el) => el.classList.remove('ui-hover'));
+                };
+            }, [currentPage]);
+
+            // Links definition
+            const LINKS = {
+                tallyForm: "https://tally.so/r/LZoAQ2",
+                whatsapp: "https://wa.me/6285111202412?text=Assalamualaikum,%20Kak%2C%20aku%20mau%20tanya%20soal%20Les%20Arab",
+                instagram: "https://instagram.com/lesarab.ahlanakademi"
+            };
+
+            const navigateTo = (page) => {
+                setCurrentPage(page);
+                setIsMenuOpen(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            // Footer putih hanya di Beranda; halaman lain pakai warna gelap (brand-p1)
+            const isHome = currentPage === 'home';
+
+            return (
+                <div className="min-h-screen flex flex-col relative overflow-x-hidden">
+                    
+                    {/* --- STICKY BANNER PROMO (TOP) --- */}
+                    {showStickyBanner && (
+                        <div className="bg-brand-s2 text-white px-4 py-2 text-xs md:text-sm text-center font-semibold flex justify-between items-center z-50 sticky top-0 shadow-md">
+                            <span className="mx-auto flex items-center gap-1.5 flex-wrap justify-center px-2">
+                                <span className="animate-pulse">🔥</span> 
+                                <strong>Early Bird 15%:</strong> Rp48rb/sesi
+                                <span className="font-normal">+ 🎁 Gratis pertemuan pertama</span>
+                                <span className="hidden md:inline font-normal">• Bebas biaya daftar</span>
+                                <button onClick={() => navigateTo('kontak')} className="underline hover:text-brand-p1 ml-1 font-bold">Klaim Slot</button>
+                            </span>
+                            <button onClick={() => setShowStickyBanner(false)} className="text-white hover:text-brand-p1 text-base font-bold focus:outline-none p-1">
+                                &times;
+                            </button>
+                        </div>
+                    )}
+
+                    {/* --- HEADER & NAVIGATION (WARNA #f7fdff SAMA DENGAN BRAND-S3) --- */}
+                    <header className={`bg-brand-s3 text-slate-800 border-b border-slate-200/60 sticky ${showStickyBanner ? 'top-8' : 'top-0'} z-40 transition-all duration-300 shadow-sm`}>
+                        <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+                            
+                            {/* Logo Link */}
+                            <button
+                                onClick={() => navigateTo('home')}
+                                className="flex items-center transition-transform hover:scale-105 focus:outline-none"
+                                aria-label="Les Arab by Ahlan Akademi - Beranda"
+                            >
+                                <img
+                                    src="mainlogo.png"
+                                    alt="Les Arab by Ahlan Akademi"
+                                    className="h-11 md:h-12 w-auto object-contain"
+                                />
+                            </button>
+
+                            {/* Desktop Navigation */}
+                            <nav className="hidden md:flex items-center gap-6 font-medium text-sm">
+                                <button onClick={() => navigateTo('home')} className={`transition py-1 ${currentPage === 'home' ? 'text-brand-p1 border-b-2 border-brand-p1 font-bold' : 'text-slate-600 hover:text-brand-p2'}`}>Beranda</button>
+                                <button onClick={() => navigateTo('program')} className={`transition py-1 ${currentPage === 'program' ? 'text-brand-p1 border-b-2 border-brand-p1 font-bold' : 'text-slate-600 hover:text-brand-p2'}`}>Program & Harga</button>
+                                <button onClick={() => navigateTo('tentang')} className={`transition py-1 ${currentPage === 'tentang' ? 'text-brand-p1 border-b-2 border-brand-p1 font-bold' : 'text-slate-600 hover:text-brand-p2'}`}>Tentang Kami</button>
+                                <button onClick={() => navigateTo('guru')} className={`transition py-1 ${currentPage === 'guru' ? 'text-brand-p1 border-b-2 border-brand-p1 font-bold' : 'text-slate-600 hover:text-brand-p2'}`}>Guru Tutor</button>
+                                <button onClick={() => navigateTo('kontak')} className="bg-brand-p2 hover:bg-brand-p2/80 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-md">Daftar Sekarang</button>
+                            </nav>
+
+                            {/* Mobile Hamburger Menu (Thumb-friendly & Accessible) */}
+                            <button 
+                                onClick={() => setIsMenuOpen(!isMenuOpen)} 
+                                className="md:hidden p-2 text-brand-p1 rounded-xl focus:outline-none hover:bg-slate-100 active:scale-95 transition"
+                                aria-label="Toggle Menu"
+                            >
+                                <i className={`fa-solid ${isMenuOpen ? 'fa-xmark' : 'fa-bars'} text-2xl`}></i>
+                            </button>
+                        </div>
+
+                        {/* Mobile Dropdown Panel */}
+                        {isMenuOpen && (
+                            <div className="md:hidden bg-brand-s3 border-t border-slate-200/60 px-4 py-4 space-y-3 shadow-inner">
+                                <button onClick={() => navigateTo('home')} className={`block w-full text-left py-3 px-4 rounded-xl text-base font-semibold ${currentPage === 'home' ? 'bg-brand-p2/10 text-brand-p1' : 'text-slate-600 hover:bg-slate-100'}`}>Beranda</button>
+                                <button onClick={() => navigateTo('program')} className={`block w-full text-left py-3 px-4 rounded-xl text-base font-semibold ${currentPage === 'program' ? 'bg-brand-p2/10 text-brand-p1' : 'text-slate-600 hover:bg-slate-100'}`}>Program & Harga</button>
+                                <button onClick={() => navigateTo('tentang')} className={`block w-full text-left py-3 px-4 rounded-xl text-base font-semibold ${currentPage === 'tentang' ? 'bg-brand-p2/10 text-brand-p1' : 'text-slate-600 hover:bg-slate-100'}`}>Tentang Kami</button>
+                                <button onClick={() => navigateTo('guru')} className={`block w-full text-left py-3 px-4 rounded-xl text-base font-semibold ${currentPage === 'guru' ? 'bg-brand-p2/10 text-brand-p1' : 'text-slate-600 hover:bg-slate-100'}`}>Guru Tutor</button>
+                                <div className="pt-2">
+                                    <button onClick={() => navigateTo('kontak')} className="btn-glow w-full text-white py-4 rounded-2xl text-center font-grotesk font-bold text-base uppercase tracking-wider">
+                                        🚀 Gas Daftar Sekarang
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </header>
+
+                    {/* --- MAIN BODY CONTENT --- */}
+                    <main className="flex-grow">
+                        {currentPage === 'home' && <HomeView navigateTo={navigateTo} LINKS={LINKS} />}
+                        {currentPage === 'program' && <ProgramView navigateTo={navigateTo} LINKS={LINKS} selectedTab={selectedProgramTab} setSelectedTab={setSelectedProgramTab} />}
+                        {currentPage === 'tentang' && <TentangView navigateTo={navigateTo} LINKS={LINKS} />}
+                        {currentPage === 'guru' && <GuruView navigateTo={navigateTo} LINKS={LINKS} />}
+                        {currentPage === 'kontak' && <KontakView LINKS={LINKS} />}
+                    </main>
+
+                    {/* --- FOOTER (BACKGROUND PUTIH) --- */}
+                    <footer className={`border-t pt-10 pb-20 md:pb-10 transition-colors duration-300 ${isHome ? 'bg-white text-slate-700 border-slate-200' : 'bg-brand-p1 text-white border-brand-p2/30'}`}>
+                        <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+                            
+                            {/* Brand Profile */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-4">
+                                    {isHome ? (
+                                        <img 
+                                            src="mainlogo.png"
+                                            alt="Les Arab by Ahlan Akademi"
+                                            className="h-10 w-auto object-contain"
+                                        />
+                                    ) : (
+                                        <div className="bg-white px-2 py-1 rounded-xl shadow-md border border-brand-s1/20 flex items-center">
+                                            <img 
+                                                src="mainlogo.png"
+                                                alt="Les Arab by Ahlan Akademi"
+                                                className="h-8 w-auto object-contain"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                                <p className={`text-sm leading-relaxed ${isHome ? 'text-slate-500' : 'text-slate-300'}`}>
+                                    Bimbel bahasa Arab online interaktif buat pelajar SMP/SMA (usia 13–18 tahun). Belajar mudah dan seru bareng alumni Timur Tengah.
+                                </p>
+                                <p className={`text-xs mt-3 font-semibold ${isHome ? 'text-brand-p2' : 'text-brand-s1'}`}>Program Resmi oleh Ahlan Akademi</p>
+                            </div>
+
+                            {/* Navigation Links */}
+                            <div>
+                                <h3 className={`font-grotesk font-bold text-lg mb-4 ${isHome ? 'text-brand-p1' : 'text-brand-s1'}`}>Navigasi Cepat</h3>
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <button onClick={() => navigateTo('home')} className={`text-left transition ${isHome ? 'text-slate-600 hover:text-brand-p2' : 'text-slate-300 hover:text-white'}`}>Beranda</button>
+                                    <button onClick={() => navigateTo('program')} className={`text-left transition ${isHome ? 'text-slate-600 hover:text-brand-p2' : 'text-slate-300 hover:text-white'}`}>Program & Harga</button>
+                                    <button onClick={() => navigateTo('tentang')} className={`text-left transition ${isHome ? 'text-slate-600 hover:text-brand-p2' : 'text-slate-300 hover:text-white'}`}>Tentang Kami</button>
+                                    <button onClick={() => navigateTo('guru')} className={`text-left transition ${isHome ? 'text-slate-600 hover:text-brand-p2' : 'text-slate-300 hover:text-white'}`}>Guru Tutor</button>
+                                    <button onClick={() => navigateTo('kontak')} className="text-left text-brand-s2 hover:text-brand-s2/80 transition font-bold">Daftar</button>
+                                </div>
+                            </div>
+
+                            {/* Contact Info & Social Proof */}
+                            <div>
+                                <h3 className={`font-grotesk font-bold text-lg mb-4 ${isHome ? 'text-brand-p1' : 'text-brand-s1'}`}>Tanya Kak Admin</h3>
+                                <ul className={`space-y-3 text-sm ${isHome ? 'text-slate-600' : 'text-slate-300'}`}>
+                                    <li>
+                                        <a href={LINKS.whatsapp} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 transition py-1 ${isHome ? 'hover:text-brand-p2' : 'hover:text-white'}`}>
+                                            <i className={`fa-brands fa-whatsapp text-lg ${isHome ? 'text-emerald-500' : 'text-emerald-400'}`}></i>
+                                            <span>+62 851-1120-2412</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href={LINKS.instagram} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 transition py-1 ${isHome ? 'hover:text-brand-p2' : 'hover:text-white'}`}>
+                                            <i className={`fa-brands fa-instagram text-lg ${isHome ? 'text-pink-500' : 'text-pink-400'}`}></i>
+                                            <span>@lesarab.ahlanakademi</span>
+                                        </a>
+                                    </li>
+                                    <li className={`text-xs pt-2 border-t ${isHome ? 'text-slate-500 border-slate-200' : 'text-slate-400 border-slate-700'}`}>
+                                        <i className="fa-solid fa-graduation-cap mr-1"></i> Bagian dari Ahlan Akademi – Platform Bimbel E-learning Mahasiswa Indonesia di Mesir.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div className={`max-w-6xl mx-auto px-4 mt-8 pt-6 border-t text-center text-xs ${isHome ? 'border-slate-200 text-slate-400' : 'border-slate-700/50 text-slate-400'}`}>
+                            <p>&copy; {new Date().getFullYear()} Les Arab by Ahlan Akademi. All rights reserved.</p>
+                        </div>
+                    </footer>
+
+                    {/* --- FLOATING WHATSAPP BUTTON --- */}
+                    <a 
+                        href={LINKS.whatsapp}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="fixed bottom-5 right-5 z-50 bg-emerald-500 hover:bg-emerald-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl active:scale-95 transition-all animate-bounce"
+                        aria-label="Tanya via WhatsApp"
+                    >
+                        <i className="fa-brands fa-whatsapp text-3xl"></i>
+                    </a>
+
+                    {/* --- PROMO POPUP MODAL --- */}
+                    {showPromoPopup && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                            <div 
+                                className="bg-white rounded-3xl w-full max-w-[340px] overflow-hidden shadow-2xl relative modal-fade-in"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {/* Header gradien */}
+                                <div className="bg-gradient-to-br from-brand-p1 via-brand-p2 to-[#2ba0bd] p-6 pt-8 text-center text-white relative">
+                                    <button 
+                                        onClick={closePopup}
+                                        className="absolute top-3 right-3 bg-white/15 hover:bg-white/25 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm transition focus:outline-none"
+                                        aria-label="Tutup"
+                                    >
+                                        &times;
+                                    </button>
+
+                                    <span className="text-3xl"></span>
+
+                                    <span className="inline-block bg-brand-s2 text-white text-[11px] font-grotesk font-bold uppercase tracking-widest px-3 py-1 rounded-full mt-2">
+                                        ✨ Promo Early Bird ✨
+                                    </span>
+                                    <h3 className="font-grotesk text-2xl font-extrabold uppercase leading-tight mt-2">
+                                        Diskon 15%
+                                    </h3>
+                                    <p className="text-xs text-white/70 mt-1">Khusus 15 Siswa Pertama, Batch Agustus 2026</p>
+                                </div>
+
+                                {/* Body */}
+                                <div className="p-6 text-center space-y-4">
+
+                                    <div className="flex justify-center items-baseline gap-2">
+                                        <span className="text-sm text-slate-400 line-through">Rp56.500</span>
+                                        <span className="text-3xl font-grotesk font-extrabold text-brand-s2">Rp48.000</span>
+                                        <span className="text-xs text-slate-400">/ sesi</span>
+                                    </div>
+
+                                    <div className="flex items-center justify-center gap-2 text-xs text-slate-600 bg-brand-s3 rounded-xl py-2.5 px-3">
+                                        <span>📅</span>
+                                        <span>Kelas mulai <strong className="text-brand-p1">3 Agustus 2026</strong></span>
+                                    </div>
+
+                                    <div className="space-y-2 pt-1">
+                                        <a 
+                                            href={LINKS.tallyForm}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn-glow block w-full text-white font-grotesk font-bold text-sm py-3.5 rounded-2xl text-center"
+                                        >
+                                            Klaim Diskon Sekarang
+                                        </a>
+                                        <button 
+                                            onClick={closePopup}
+                                            className="text-xs text-slate-400 hover:text-slate-600 font-medium py-1"
+                                        >
+                                            Nanti aja, lihat-lihat dulu
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            );
+        }
+
+        /* =========================================================================
+           ANIMASI 2D: DUA REMAJA BERCAKAP BAHASA ARAB (pakai gambar PNG)
+           Kiri: siswa (3.png) | Kanan: siswi berhijab (4.png)
+           ========================================================================= */
+        function HeroConversation() {
+            const dialogue = [
+                { who: 'left',  ar: 'اَلسَّلَامُ عَلَيْكُمْ',   tr: 'Assalāmu ʿalaikum',  id: 'Semoga keselamatan atasmu' },
+                { who: 'right', ar: 'وَعَلَيْكُمُ السَّلَام',   tr: 'Waʿalaikumus-salām', id: 'dan atasmu keselamatan' },
+                { who: 'left',  ar: 'كَيْفَ حَالُكِ؟',          tr: 'Kaifa ḥāluki?',      id: 'Gimana kabarmu?' },
+                { who: 'right', ar: 'أَنَا بِخَيْر، وَأَنْتَ؟', tr: 'Anā bikhair, wa anta?', id: 'Aku baik, kamu?' },
+                { who: 'left',  ar: 'اَلْحَمْدُ لِلّٰه',        tr: 'Alḥamdulillāh',      id: 'Segala puji bagi Allah' },
+                { who: 'right', ar: 'مَعَ السَّلَامَة',        tr: 'Maʿas-salāmah',      id: 'Sampai jumpa' },
+            ];
+            const [step, setStep] = useState(0);
+            useEffect(() => {
+                const t = setInterval(() => setStep((s) => (s + 1) % dialogue.length), 2600);
+                return () => clearInterval(t);
+            }, []);
+            const current = dialogue[step];
+            const leftActive = current.who === 'left';
+
+            // ====== GESER MANUAL BALON (satuan px) ======
+            // Positif = geser ke KANAN, negatif = geser ke KIRI.
+            const BOY_BUBBLE_X  = 0;   // balon si laki-laki
+            const GIRL_BUBBLE_X = 0;   // balon si perempuan
+            // =============================================
+
+            const Bubble = ({ offsetX }) => (
+                // Div luar: khusus untuk menengahkan + geser manual (tidak dianimaslikan,
+                // supaya transform-nya tidak ditimpa animasi balon).
+                <div
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-max max-w-[150px] md:max-w-[180px]"
+                    style={{ marginLeft: offsetX + 'px' }}
+                >
+                    {/* Div dalam: balon + animasi muncul/goyang */}
+                    <div key={step} className="bubble-pop bubble-sway relative bg-white rounded-2xl px-3.5 py-2.5 shadow-lg border border-slate-100 text-center">
+                        <p className="font-arabic text-brand-p1 text-xl md:text-2xl leading-tight" dir="rtl">{current.ar}</p>
+                        <p className="text-[10px] md:text-xs text-brand-p2 font-bold mt-0.5">{current.tr}</p>
+                        <p className="text-[9px] md:text-[10px] text-slate-400 italic mt-0.5">"{current.id}"</p>
+                        {/* Ekor segitiga standar menunjuk ke bawah */}
+                        <div className="absolute left-1/2 -translate-x-1/2 -bottom-[7px] w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-white"></div>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="relative w-full min-h-[300px] md:min-h-[350px] flex items-end justify-center">
+
+                    {/* Cahaya lembut di belakang karakter */}
+                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 h-16 bg-brand-s1/25 rounded-full blur-2xl z-0"></div>
+
+                    {/* Dua karakter, balon nempel di atas kepala yang sedang bicara */}
+                    <div className="relative z-10 flex items-end justify-center gap-1 md:gap-4 w-full">
+                        <div className={`relative origin-bottom transition-all duration-500 ${leftActive ? 'scale-105 opacity-100' : 'scale-95 opacity-70'}`}>
+                            {leftActive && <Bubble offsetX={BOY_BUBBLE_X} />}
+                            <img
+                                src="3.png"
+                                alt="Siswa Les Arab"
+                                className={`w-32 md:w-40 h-auto origin-bottom drop-shadow-xl ${leftActive ? 'talk-bob' : 'idle-float'}`}
+                            />
+                        </div>
+                        <div className={`relative origin-bottom transition-all duration-500 ${!leftActive ? 'scale-105 opacity-100' : 'scale-95 opacity-70'}`}>
+                            {!leftActive && <Bubble offsetX={GIRL_BUBBLE_X} />}
+                            <img
+                                src="4.png"
+                                alt="Siswi Les Arab"
+                                className={`w-32 md:w-40 h-auto origin-bottom drop-shadow-xl ${!leftActive ? 'talk-bob' : 'idle-float'}`}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Indikator progres percakapan */}
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1">
+                        {dialogue.map((_, i) => (
+                            <span
+                                key={i}
+                                className={`h-1 rounded-full transition-all duration-300 ${i === step ? 'w-4 bg-white' : 'w-1.5 bg-white/40'}`}
+                            ></span>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        /* =========================================================================
+           1. BERANDA / HOMEPAGE VIEW
+           ========================================================================= */
+        function HomeView({ navigateTo, LINKS }) {
+            return (
+                <div className="space-y-12">
+                    
+                    {/* --- HERO SECTION --- */}
+                    <section className="bg-brand-p1 text-white py-12 px-4 relative overflow-hidden">
+                        <div className="absolute right-0 top-0 w-64 h-64 bg-brand-p2 rounded-full filter blur-3xl opacity-20 -mr-10 -mt-10"></div>
+                        <div className="absolute left-0 bottom-0 w-64 h-64 bg-brand-s1 rounded-full filter blur-3xl opacity-10 -ml-10 -mb-10"></div>
+
+                        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative z-10">
+                            
+                            <div className="space-y-5 text-center md:text-left">
+                                <span className="inline-block bg-brand-s2 text-white font-grotesk font-bold text-xs uppercase tracking-widest px-3 py-1 rounded-full">
+                                    #ArabItuMudah
+                                </span>
+                                
+                                <h2 className="font-grotesk text-3xl md:text-5xl font-extrabold leading-tight">
+                                    Dari Gagap, Sampai Lancar Ngomong Bahasa Arab!
+                                </h2>
+                                
+                                <p className="text-base md:text-lg text-slate-100 font-light max-w-md mx-auto md:mx-0">
+                                    Bimbel online bahasa Arab interaktif buat pelajar SMP/SMA. Bersama tutor lulusan Timur Tengah tersertifikat, yang seru & komunikatif.
+                                </p>
+
+                                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                    <a 
+                                        href={LINKS.tallyForm}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn-glow w-full sm:w-auto text-white font-grotesk font-bold text-lg px-8 py-4.5 rounded-2xl transition-all text-center flex items-center justify-center gap-2"
+                                    >
+                                        🚀 Gas Daftar Sekarang
+                                    </a>
+                                    <a 
+                                        href={LINKS.whatsapp}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full sm:w-auto bg-brand-p2/50 hover:bg-brand-p2/70 text-slate-100 font-semibold text-base px-6 py-4 rounded-2xl border border-brand-s1/30 transition-all text-center flex items-center justify-center gap-2"
+                                    >
+                                        <i className="fa-brands fa-whatsapp text-emerald-400"></i>
+                                        Tanya Kak Admin
+                                    </a>
+                                </div>
+
+                                <p className="text-xs text-brand-s1 font-medium">
+                                    📅 Kelas Baru Mulai: <span className="text-white underline">3 Agustus 2026</span>
+                                </p>
+                            </div>
+
+                            <div className="relative mx-auto w-full max-w-sm md:max-w-md">
+                                {/* Animasi 2D: dua remaja bercakap bahasa Arab (tanpa kotak) */}
+                                <HeroConversation />
+                            </div>
+
+                        </div>
+                    </section>
+
+                    {/* --- TARGET AUDIENS --- */}
+                    <section className="max-w-4xl mx-auto px-4">
+                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-100 text-center space-y-6">
+                            <div>
+                                <span className="text-xs text-brand-p2 font-grotesk font-bold uppercase tracking-widest bg-brand-s3 px-3 py-1 rounded-full">
+                                    Bimbelnya Buat Siapa, Sih?
+                                </span>
+                                <h3 className="font-grotesk text-2xl md:text-3xl font-extrabold mt-2 text-brand-p1">
+                                    Buat kamu pelajar SMP & SMA yang:
+                                </h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+                                <div className="bg-brand-s3 p-5 rounded-2xl border border-brand-s1/10 flex items-start gap-3">
+                                    <span className="text-2xl mt-1">🗣️</span>
+                                    <div>
+                                        <p className="font-bold text-slate-800 text-sm md:text-base">Pengen Lancar Ngomong</p>
+                                        <p className="text-xs text-slate-500 mt-1">Pengen bisa ngomong bahasa Arab beneran, bukan cuma hafal rumus nahwu-sharaf doang.</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-brand-s3 p-5 rounded-2xl border border-brand-s1/10 flex items-start gap-3">
+                                    <span className="text-2xl mt-1">✈️</span>
+                                    <div>
+                                        <p className="font-bold text-slate-800 text-sm md:text-base">Impian Kuliah di Timur Tengah</p>
+                                        <p className="text-xs text-slate-500 mt-1">Punya cita-cita kuliah di Universitas Islam terkemuka atau langsung terbang ke Timur Tengah.</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-brand-s3 p-5 rounded-2xl border border-brand-s1/10 flex items-start gap-3">
+                                    <span className="text-2xl mt-1">😭</span>
+                                    <div>
+                                        <p className="font-bold text-slate-800 text-sm md:text-base">Bosan Belajar Stagnan</p>
+                                        <p className="text-xs text-slate-500 mt-1">Capek belajar bahasa Arab di sekolah bertahun-tahun tapi gitu-gitu aja hasilnya.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p className="text-xs md:text-sm text-slate-600 font-medium italic">
+                                "Belajar bahasa Arab bertahun-tahun tapi masih blank pas ngomong?😭 Tenang, kamu gak sendirian. Kita beresin bareng!"
+                            </p>
+                        </div>
+                    </section>
+
+                    {/* --- CARA BELAJAR --- */}
+                    <section className="max-w-4xl mx-auto px-4 space-y-6">
+                        <div className="text-center">
+                            <span className="text-xs text-brand-p2 font-grotesk font-bold uppercase tracking-widest bg-brand-s3 px-3 py-1 rounded-full">
+                                Alur Belajar
+                            </span>
+                            <h3 className="font-grotesk text-2xl md:text-3xl font-extrabold mt-1 text-brand-p1">
+                                Belajarnya Gimana?
+                            </h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            
+                            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-md text-center space-y-3">
+                                <div className="bg-brand-s1/10 text-brand-p2 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold">
+                                    📱
+                                </div>
+                                <h4 className="font-grotesk font-bold text-base text-slate-800">Live Zoom Interaktif</h4>
+                                <p className="text-xs text-slate-500 leading-relaxed">
+                                    Bukan video rekaman aja, kamu langsung tatap muka bareng guru, bisa tanya & praktik ngomong detik itu juga!
+                                </p>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-md text-center space-y-3">
+                                <div className="bg-brand-s1/10 text-brand-p2 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold">
+                                    🗓️
+                                </div>
+                                <h4 className="font-grotesk font-bold text-base text-slate-800">Sesi Singkat & Padat</h4>
+                                <p className="text-xs text-slate-500 leading-relaxed">
+                                    3x seminggu, cuma 60 menit per sesi kok. Gak bikin pusing, ga mengganggu waktu sekolah atau mainmu.
+                                </p>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-md text-center space-y-3">
+                                <div className="bg-brand-s1/10 text-brand-p2 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold">
+                                    👨‍🏫
+                                </div>
+                                <h4 className="font-grotesk font-bold text-base text-slate-800">Tutor Lulusan Timur Tengah</h4>
+                                <p className="text-xs text-slate-500 leading-relaxed">
+                                    Diajarin sama kakak tutor tersertifikat lulusan Timur Tengah yang seru, asyik, & komunikatif. Anti-boring!
+                                </p>
+                            </div>
+
+                        </div>
+                    </section>
+
+                    {/* --- USP (KENAPA HARUS DI LES ARAB?) --- */}
+                    <section className="bg-white py-12 px-4 border-y border-slate-100">
+                        <div className="max-w-4xl mx-auto space-y-8">
+                            <div className="text-center">
+                                <span className="text-xs text-brand-p2 font-grotesk font-bold uppercase tracking-widest bg-brand-s3 px-3 py-1 rounded-full">
+                                    Kenapa Harus Kami?
+                                </span>
+                                <h3 className="font-grotesk text-2xl md:text-3xl font-extrabold mt-1 text-brand-p1">
+                                    Kenapa Belajar di Les Arab?
+                                </h3>
+                                <p className="text-xs text-slate-500 mt-1">Bukan platform bimbel biasa yang kaku.</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex gap-3 items-start p-4 bg-brand-s3 rounded-2xl border border-brand-s1/10">
+                                    <div className="text-brand-p2 text-lg">🗣️</div>
+                                    <div>
+                                        <p className="font-bold text-slate-800 text-sm">Fokus ke NGOMONG (Muhadatsah)</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">Bukan cuma hafalan teori gramatikal, kamu bakal dibiasakan ngobrol aktif sejak hari pertama.</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 items-start p-4 bg-brand-s3 rounded-2xl border border-brand-s1/10">
+                                    <div className="text-brand-p2 text-lg">📚</div>
+                                    <div>
+                                        <p className="font-bold text-slate-800 text-sm">Kosakata (Mufradat) Nambah Terus</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">Metode seru bikin gampang hafal kosakata harian yang sering dipakai pelajar.</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 items-start p-4 bg-brand-s3 rounded-2xl border border-brand-s1/10">
+                                    <div className="text-brand-p2 text-lg">🎓</div>
+                                    <div>
+                                        <p className="font-bold text-slate-800 text-sm">Tutor Lulusan Timur Tengah Tersertifikat</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">Tutor diseleksi, alumni universitas di Timur-Tengah & punya bakat mengajar interaktif.</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 items-start p-4 bg-brand-s3 rounded-2xl border border-brand-s1/10">
+                                    <div className="text-brand-p2 text-lg">📊</div>
+                                    <div>
+                                        <p className="font-bold text-slate-800 text-sm">Ada Progress Tracker Tiap Bulan</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">Laporan belajar rutin dikirim ke kamu dan orang tuamu biar tau perkembangannya.</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 items-start p-4 bg-brand-s3 rounded-2xl border border-brand-s1/10">
+                                    <div className="text-brand-p2 text-lg">🏆</div>
+                                    <div>
+                                        <p className="font-bold text-slate-800 text-sm">Dapet Sertifikat Resmi</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">Sertifikat kelulusan diberikan tiap kamu menyelesaikan suatu jenjang paket.</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 items-start p-4 bg-brand-s3 rounded-2xl border border-brand-s1/10">
+                                    <div className="text-brand-p2 text-lg">⏰</div>
+                                    <div>
+                                        <p className="font-bold text-slate-800 text-sm">Jadwal Sangat Fleksibel</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">Tinggal pilih slot waktu kelas yang cocok sama jadwal padat sekolahmu.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="glow-box text-white p-5 text-center shadow-lg">
+                                <p className="text-xs uppercase tracking-wider text-brand-s1 font-bold">✨ INVESTASI MASA DEPAN TERMURAH (DISKON EARLY BIRD 15%!) ✨</p>
+                                <p className="text-lg font-bold font-grotesk mt-1 flex justify-center items-center gap-2">
+                                    Mulai dari 
+                                    <span className="line-through text-slate-300 text-sm">Rp56.500</span> 
+                                    <span className="text-brand-s2 font-extrabold text-2xl" style={{ WebkitTextStroke: '2.0px #ffffff', paintOrder: 'stroke' }}>Rp48.000</span> 
+                                    <span className="text-xs font-normal text-slate-200">/ Sesi</span>
+                                </p>
+                                <p className="text-[10px] text-slate-200 mt-0.5">Diskon Khusus 15 Siswa Pertama Batch Agustus!</p>
+                                <div className="flex flex-wrap justify-center gap-2 mt-3">
+                                    <span className="bg-white/15 backdrop-blur-sm text-white text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full border border-white/25">🎁 GRATIS Pertemuan Pertama </span>
+                                    <span className="bg-white/15 backdrop-blur-sm text-white text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full border border-white/25">✅ Bebas biaya pendaftaran</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- PREVIEW PAKET --- */}
+                    <section className="max-w-4xl mx-auto px-4 space-y-6">
+                        <div className="text-center">
+                            <h3 className="font-grotesk text-2xl font-extrabold text-brand-p1">Pilihan Paket Belajar</h3>
+                            <p className="text-xs text-slate-500 mt-1"></p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            
+                            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-md relative flex flex-col justify-between">
+                                <div>
+                                    <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full">🥉 Starter Pack</span>
+                                    <h4 className="font-grotesk font-bold text-lg mt-2 text-slate-800">Buat Nyoba Dulu</h4>
+                                    <p className="text-[11px] text-slate-400 mt-1">Durasi: 1 Bulan (12 Sesi)</p>
+                                    <p className="text-xs text-slate-600 mt-3 leading-relaxed">
+                                        Fokus perkenalan diri lengkap & cerita kegiatan sehari-hari sederhana. Target mufradat aktif ±120.
+                                    </p>
+                                </div>
+                                <div className="mt-5 pt-3 border-t border-slate-50">
+                                    <p className="text-[10px] text-slate-400">Harga Early Bird</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs text-slate-400 line-through">Rp79.000</span>
+                                        <span className="text-lg font-bold text-brand-p2">Rp67.150 <span className="text-xs text-slate-500 font-normal">/sesi</span></span>
+                                    </div>
+                                    <button onClick={() => navigateTo('program')} className="w-full mt-3 bg-brand-p1 text-white py-2 rounded-xl text-xs font-bold hover:bg-brand-p2 transition">
+                                        Lihat Detail Paket
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-3xl p-5 border-2 border-brand-s2 shadow-lg relative flex flex-col justify-between">
+                                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-s2 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+                                    ⭐ REKOMENDASI
+                                </span>
+                                <div>
+                                    <span className="bg-amber-50 text-brand-s2 text-xs font-bold px-2.5 py-1 rounded-full mt-1 inline-block">🥈 Beginner Pack</span>
+                                    <h4 className="font-grotesk font-bold text-lg mt-2 text-slate-800">Kuatin Fondasi</h4>
+                                    <p className="text-[11px] text-slate-400 mt-1">Durasi: 3 Bulan (36 Sesi)</p>
+                                    <p className="text-xs text-slate-600 mt-3 leading-relaxed">
+                                        Ngobrol 12 topik sehari-hari (Pesen GoFood, belanja, ke dokter), lancar baca teks berharakat. Target mufradat ±350. Setara Level A1.
+                                    </p>
+                                </div>
+                                <div className="mt-5 pt-3 border-t border-slate-50">
+                                    <p className="text-[10px] text-slate-400">Harga Early Bird</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs text-slate-400 line-through">Rp67.500</span>
+                                        <span className="text-lg font-bold text-brand-p2">Rp57.300 <span className="text-xs text-slate-500 font-normal">/sesi</span></span>
+                                    </div>
+                                    <button onClick={() => navigateTo('program')} className="w-full mt-3 bg-brand-s2 text-white py-2 rounded-xl text-xs font-bold hover:bg-brand-s2/90 transition">
+                                        Lihat Detail Paket
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-md relative flex flex-col justify-between">
+                                <div>
+                                    <span className="bg-blue-50 text-blue-600 text-xs font-bold px-2.5 py-1 rounded-full">🥇 Elementary Pack</span>
+                                    <h4 className="font-grotesk font-bold text-lg mt-2 text-slate-800">Newbie Tingkat Lanjut</h4>
+                                    <p className="text-[11px] text-slate-400 mt-1">Durasi: 6 Bulan (72 Sesi)</p>
+                                    <p className="text-xs text-slate-600 mt-3 leading-relaxed">
+                                        Kuasai 24 topik percakapan mendalam, diskusi topik luas, baca berita ringan. Target mufradat ±700.
+                                    </p>
+                                </div>
+                                <div className="mt-5 pt-3 border-t border-slate-50">
+                                    <p className="text-[10px] text-slate-400">Harga Early Bird</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs text-slate-400 line-through">Rp56.500</span>
+                                        <span className="text-lg font-bold text-brand-p2">Rp48.000 <span className="text-xs text-slate-500 font-normal">/sesi</span></span>
+                                    </div>
+                                    <button onClick={() => navigateTo('program')} className="w-full mt-3 bg-brand-p1 text-white py-2 rounded-xl text-xs font-bold hover:bg-brand-p2 transition">
+                                        Lihat Detail Paket
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </section>
+
+                    {/* --- FAQ MINI --- */}
+                    <section className="max-w-3xl mx-auto px-4 space-y-4">
+                        <h3 className="font-grotesk text-xl font-bold text-brand-p1 text-center">Pertanyaan yang sering kamu tanyain</h3>
+                        
+                        <div className="space-y-2">
+                            <div className="bg-white p-4 rounded-xl border border-slate-100 text-xs">
+                                <p className="font-bold text-slate-800">Q: Apakah harus ada dasar bahasa Arab dulu?</p>
+                                <p className="text-slate-500 mt-1">A: Gak perlu, Syabab! Program Starter kita khusus dirancang dari nol banget buat kamu yang baru mau mulai.</p>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl border border-slate-100 text-xs">
+                                <p className="font-bold text-slate-800">Q: Kurikulum apa yang dipakai?</p>
+                                <p className="text-slate-500 mt-1">A: Kita pakai Al-Arabiyah Bayna Yadayk, standar universitas Timur Tengah & LIPIA Jakarta, disesuaikan khusus gaya pelajar.</p>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl border border-slate-100 text-xs">
+                                <p className="font-bold text-slate-800">Q: Kapan kelas baru dimulai?</p>
+                                <p className="text-slate-500 mt-1">A: Untuk batch Agustus, kelas dimulai tanggal 3. Kelas baru dibuka setiap minggu pertama di awal bulan.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- FINAL CTA --- */}
+                    <section className="bg-brand-p1 text-white py-12 px-4 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-brand-p2/20 mix-blend-overlay"></div>
+                        <div className="max-w-2xl mx-auto space-y-6 relative z-10">
+                            <h3 className="font-grotesk text-2xl md:text-3xl font-bold">
+                                Siap Lancar Ngomong Bahasa Arab?
+                            </h3>
+                            <p className="text-sm text-slate-200 max-w-md mx-auto">
+                                Yuk, gabung Les Arab by Ahlan Akademi! Kelas angkatan baru dimulai tanggal <strong>3 Agustus 2026</strong>. Amankan kuota early bird-mu sekarang sebelum kehabisan!
+                            </p>
+                            
+                            <div>
+                                <a 
+                                    href={LINKS.tallyForm}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn-glow inline-block text-white font-grotesk font-bold text-lg px-8 py-4.5 rounded-2xl text-center transition-all"
+                                >
+                                    🚀 Gas Amankan Slot Diskon
+                                </a>
+                            </div>
+
+                            <p className="text-xs text-brand-s1 font-semibold">
+                                *Hanya tersisa beberapa slot untuk diskon 15% Early Bird!
+                            </p>
+                        </div>
+                    </section>
+
+                </div>
+            );
+        }
+
+        /* =========================================================================
+           2. PROGRAM & HARGA VIEW
+           ========================================================================= */
+        function ProgramView({ navigateTo, LINKS, selectedTab, setSelectedTab }) {
+            return (
+                <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+                    
+                    <div className="text-center space-y-2">
+                        <span className="text-xs text-brand-p2 font-grotesk font-bold uppercase tracking-widest bg-brand-s3 px-3 py-1 rounded-full">
+                            Program & Paket Belajar
+                        </span>
+                        <h2 className="font-grotesk text-2xl md:text-3xl font-extrabold text-brand-p1">Belajar Hari Ini, Lancar Bahasa Arab Esok Hari!</h2>
+                        <p className="text-xs text-slate-500 max-w-md mx-auto">Semua paket dilengkapi kelas interaktif via Zoom, progres tracker bulanan, & sertifikat kelulusan.</p>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-md">
+                        <h3 className="text-xs font-bold uppercase tracking-wide text-brand-p2 mb-3 text-center md:text-left">
+                            ✨ Berlaku di Semua Paket Pilihanmu:
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                            <div className="flex items-center gap-2">
+                                <span className="bg-brand-s1/10 text-brand-p2 p-1.5 rounded-full"><i className="fa-solid fa-video"></i></span>
+                                <span>Kelas interaktif live via Zoom</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="bg-brand-s1/10 text-brand-p2 p-1.5 rounded-full"><i className="fa-solid fa-clock"></i></span>
+                                <span>60 menit per sesi, 3x seminggu</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="bg-brand-s1/10 text-brand-p2 p-1.5 rounded-full"><i className="fa-solid fa-user-group"></i></span>
+                                <span>Grup (2–5 siswa) atau Privat 1-on-1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex bg-slate-150 p-1.5 rounded-2xl max-w-sm mx-auto border border-slate-200">
+                        <button 
+                            onClick={() => setSelectedTab('reguler')}
+                            className={`flex-1 py-3 text-sm font-semibold rounded-xl transition ${selectedTab === 'reguler' ? 'bg-brand-p1 text-white shadow-md' : 'text-slate-600 hover:text-slate-800'}`}
+                        >
+                            👥 Kelas Reguler (2-5 siswa)
+                        </button>
+                        <button 
+                            onClick={() => setSelectedTab('privat')}
+                            className={`flex-1 py-3 text-sm font-semibold rounded-xl transition ${selectedTab === 'privat' ? 'bg-brand-p1 text-white shadow-md' : 'text-slate-600 hover:text-slate-800'}`}
+                        >
+                            👤 Privat 1-on-1
+                        </button>
+                    </div>
+
+                    <div className="bg-amber-50 text-brand-s2 border border-brand-s2/20 p-4 rounded-2xl text-center text-xs font-semibold">
+                        🎉 <strong className="font-grotesk">Diskon Early Bird 15%</strong> untuk 15 siswa pertama (berlaku di paket Reguler & Privat) Kelas Mulai 3 Agustus 2026.
+                    </div>
+
+                    <div className="space-y-6">
+                        
+                        {/* 1. STARTER */}
+                        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md flex flex-col md:flex-row justify-between gap-6 relative">
+                            <div className="space-y-3 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-0.5 rounded">💡 Starter Pack</span>
+                                    <span className="text-slate-400 text-xs font-medium">1 Bulan (12 Sesi)</span>
+                                </div>
+                                <h4 className="font-grotesk text-xl font-bold text-slate-800">Paket Starter (Buat Coba Dulu)</h4>
+                                <p className="text-xs text-slate-500 leading-relaxed">
+                                    Cocok buat yang kamu yang mau cobain metode belajar interaktif di Les Arab. Kamu bakal belajar dasar perkenalan, menyusun kosakata dasar dan atasi grogi berbicara bahasa Arab.
+                                </p>
+                                <div>
+                                    <p className="text-[11px] font-bold text-brand-p1 uppercase tracking-wider mb-1">Target Kelulusan Paket:</p>
+                                    <ul className="text-xs text-slate-600 space-y-1">
+                                        <li>✔️ Jago perkenalan diri lengkap dalam bahasa Arab.</li>
+                                        <li>✔️ Jago ceritain singkat tentang keluarga & rumah.</li>
+                                        <li>✔️ Jago ceritain kegiatan sehari-hari sederhana.</li>
+                                        <li>📈 Target mufradat aktif ±120.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 text-center md:text-right min-w-[220px] flex flex-col justify-between">
+                                <div>
+                                    <p className="text-xs text-slate-500 font-medium">Biaya Sesi:</p>
+                                    {selectedTab === 'reguler' ? (
+                                        <div className="my-2">
+                                            <p className="text-xs text-slate-400 line-through font-semibold">Rp79.000</p>
+                                            <p className="text-2xl font-grotesk font-extrabold text-brand-s2">Rp67.150</p>
+                                            <p className="text-[10px] text-slate-400">per sesi per siswa</p>
+                                        </div>
+                                    ) : (
+                                        <div className="my-2">
+                                            <p className="text-xs text-slate-400 line-through font-semibold">Rp150.000</p>
+                                            <p className="text-2xl font-grotesk font-extrabold text-brand-s2">Rp127.500</p>
+                                            <p className="text-[10px] text-slate-400">per sesi (fokus 1-on-1)</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <a 
+                                    href={LINKS.tallyForm}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block w-full bg-brand-p2 hover:bg-brand-p1 text-white py-3.5 rounded-xl text-xs font-grotesk font-bold uppercase tracking-wider text-center shadow-md active:scale-95 transition"
+                                >
+                                    Gas Daftar Starter
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* 2. BEGINNER */}
+                        <div className="bg-white rounded-3xl p-6 border-2 border-brand-s2 shadow-lg flex flex-col md:flex-row justify-between gap-6 relative overflow-hidden">
+                            <span className="absolute top-0 right-0 bg-brand-s2 text-white text-[10px] font-bold px-3 py-1 rounded-bl-2xl tracking-wide z-10 flex items-center gap-1">⭐ Rekomendasi Guru</span>
+                            <div className="space-y-3 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="bg-amber-50 text-brand-s2 text-xs font-bold px-2 py-0.5 rounded">🥈 Beginner Pack</span>
+                                    <span className="text-slate-400 text-xs font-medium">3 Bulan (36 Sesi)</span>
+                                </div>
+                                <h4 className="font-grotesk text-xl font-bold text-slate-800">Paket Beginner (Kuatin Fondasi)</h4>
+                                <p className="text-xs text-slate-500 leading-relaxed">
+                                    Program pemula rekomendasi buat bangun komunikasi aktif. Di level ini kamu bakal diajarin buat interaksi real-time pada berbagai kondisi lingkungan sehari-hari.
+                                </p>
+                                <div>
+                                    <p className="text-[11px] font-bold text-brand-p1 uppercase tracking-wider mb-1">Target Kelulusan Paket:</p>
+                                    <ul className="text-xs text-slate-600 space-y-1">
+                                        <li>✔️ Kuasai percakapan aktif untuk 12 topik sehari-hari (pesan GoFood, belanja, ke dokter).</li>
+                                        <li>✔️ Jago bercerita tentang hobi, cuaca, & rencana masa depan.</li>
+                                        <li>✔️ Jago baca teks bahasa Arab berharakat dengan lancar.</li>
+                                        <li>📈 Target mufradat aktif ±350 & paham grammar dasar.</li>
+                                        <li>🎓 Disini kamu setara kompetensi dasar Level Internasional A1.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 text-center md:text-right min-w-[220px] flex flex-col justify-between">
+                                <div>
+                                    <p className="text-xs text-slate-500 font-medium">Biaya Sesi:</p>
+                                    {selectedTab === 'reguler' ? (
+                                        <div className="my-2">
+                                            <p className="text-xs text-slate-400 line-through font-semibold">Rp67.500</p>
+                                            <p className="text-2xl font-grotesk font-extrabold text-brand-s2">Rp57.300</p>
+                                            <p className="text-[10px] text-slate-400">per sesi per siswa</p>
+                                        </div>
+                                    ) : (
+                                        <div className="my-2">
+                                            <p className="text-xs text-slate-400 line-through font-semibold">Rp135.000</p>
+                                            <p className="text-2xl font-grotesk font-extrabold text-brand-s2">Rp114.750</p>
+                                            <p className="text-[10px] text-slate-400">per sesi (fokus 1-on-1)</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <a 
+                                    href={LINKS.tallyForm}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block w-full bg-brand-s2 hover:bg-brand-s2/90 text-white py-3.5 rounded-xl text-xs font-grotesk font-bold uppercase tracking-wider text-center shadow-md active:scale-95 transition animate-pulse"
+                                >
+                                    Gas Daftar Beginner
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* 3. ELEMENTARY */}
+                        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md flex flex-col md:flex-row justify-between gap-6 relative">
+                            <div className="space-y-3 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="bg-blue-50 text-blue-600 text-xs font-bold px-2 py-0.5 rounded">🥇 Elementary Pack</span>
+                                    <span className="text-slate-400 text-xs font-medium">6 Bulan (72 Sesi)</span>
+                                </div>
+                                <h4 className="font-grotesk text-xl font-bold text-slate-800">Paket Elementary (Newbie Tingkat Lanjut)</h4>
+                                <p className="text-xs text-slate-500 leading-relaxed">
+                                    Paket jangka panjang buat kamu yang serius kuasai bahasa Arab demi cita-cita masa depan. Ngobrolnya makin luas dan bisa berpendapat.
+                                </p>
+                                <div>
+                                    <p className="text-[11px] font-bold text-brand-p1 uppercase tracking-wider mb-1">Target Kelulusan Paket:</p>
+                                    <ul className="text-xs text-slate-600 space-y-1">
+                                        <li>✔️ Jago 24 topik percakapan mendalam.</li>
+                                        <li>✔️ Bisa ceritain pengalaman pribadi & menyampaikan pendapat.</li>
+                                        <li>✔️ Paham artikel dan berita ringan.</li>
+                                        <li>📈 Target mufradat aktif ±700.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 text-center md:text-right min-w-[220px] flex flex-col justify-between">
+                                <div>
+                                    <p className="text-xs text-slate-500 font-medium">Biaya Sesi:</p>
+                                    {selectedTab === 'reguler' ? (
+                                        <div className="my-2">
+                                            <p className="text-xs text-slate-400 line-through font-semibold">Rp56.500</p>
+                                            <p className="text-2xl font-grotesk font-extrabold text-brand-s2">Rp48.000</p>
+                                            <p className="text-[10px] text-slate-400">per sesi per siswa</p>
+                                        </div>
+                                    ) : (
+                                        <div className="my-2">
+                                            <p className="text-xs text-slate-400 line-through font-semibold">Rp120.000</p>
+                                            <p className="text-2xl font-grotesk font-extrabold text-brand-s2">Rp102.000</p>
+                                            <p className="text-[10px] text-slate-400">per sesi (fokus 1-on-1)</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <a 
+                                    href={LINKS.tallyForm}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block w-full bg-brand-p2 hover:bg-brand-p1 text-white py-3.5 rounded-xl text-xs font-grotesk font-bold uppercase tracking-wider text-center shadow-md active:scale-95 transition"
+                                >
+                                    Gas Daftar Elementary
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* 4. ADVANCED - COMING SOON */}
+                        <div className="relative bg-gradient-to-br from-slate-50 to-brand-s3 rounded-3xl p-6 border-2 border-dashed border-brand-s1/50 shadow-md flex flex-col md:flex-row justify-between gap-6 overflow-hidden">
+                            <span className="absolute top-0 right-0 bg-brand-p1 text-white text-[10px] font-bold px-3 py-1 rounded-bl-2xl tracking-wide z-10">🚀 COMING SOON</span>
+
+                            <div className="space-y-3 flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="bg-brand-p1/10 text-brand-p1 text-xs font-bold px-2 py-0.5 rounded">💎 Advanced Pack</span>
+                                    <span className="text-slate-400 text-xs font-medium">12 Bulan (144 Sesi)</span>
+                                </div>
+                                <h4 className="font-grotesk text-xl font-bold text-slate-800">Paket Advanced (Jadi Pro)</h4>
+                                <p className="text-xs text-slate-500 leading-relaxed">
+                                    Buat kamu yang serius banget pengen jago Bahasa Arab!
+                                </p>
+                                <div>
+                                    <p className="text-[11px] font-bold text-brand-p1 uppercase tracking-wider mb-1">Target Kelulusan Paket:</p>
+                                    <ul className="text-xs text-slate-600 space-y-1">
+                                        <li>✔️ Lancar ngobrol dari topik sehari-hari sampai topik yang lebih dalam.</li>
+                                        <li>✔️ Jago cerita pengalaman dengan runtut dan jelas.</li>
+                                        <li>✔️ Pede ngobrol sama penutur asli.</li>
+                                        <li>✔️ Mulai paham bahasa Arab akademik.</li>
+                                        <li>✔️ Bisa baca artikel & teks Arab tanpa banyak harakat.</li>
+                                        <li>✔️ Siap jadi bekal masuk kampus Timur Tengah.</li>
+                                        <li>📈 Target mufradat aktif ±1.300–1.500 kata.</li>
+                                        <li>🏆 Skill Arab jauh di atas rata-rata pelajar seusiamu.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="bg-white/70 p-5 rounded-2xl border border-slate-100 text-center min-w-[220px] flex flex-col justify-center items-center gap-2">
+                                <span className="text-4xl">🔒</span>
+                                <p className="text-sm font-grotesk font-bold text-brand-p1">Segera Hadir!</p>
+                                <p className="text-[10px] text-slate-400 leading-relaxed">Paket ini lagi kita siapin. Pantau terus ya, Syabab!</p>
+                                <button disabled className="mt-1 w-full bg-slate-200 text-slate-400 py-3 rounded-xl text-xs font-grotesk font-bold uppercase tracking-wider cursor-not-allowed">
+                                    Coming Soon
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            );
+        }
+
+        /* =========================================================================
+           3. TENTANG KAMI VIEW
+           ========================================================================= */
+        function TentangView({ navigateTo, LINKS }) {
+            return (
+                <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+                    
+                    <div className="text-center space-y-2">
+                        <span className="text-xs text-brand-p2 font-grotesk font-bold uppercase tracking-widest bg-brand-s3 px-3 py-1 rounded-full">
+                            Kenalan Yuk!
+                        </span>
+                        <h2 className="font-grotesk text-2xl md:text-3xl font-extrabold text-brand-p1">Cerita Les Arab by Ahlan Akademi</h2>
+                        <p className="text-xs text-slate-500">Misi kita simpel: dobrak stigma kalo bahasa Arab itu ribet dan bikin boring.</p>
+                    </div>
+
+                    <div className="bg-white rounded-3xl p-6 md:p-8 shadow-md border border-slate-100 space-y-6">
+                        
+                        <div className="space-y-4">
+                            <h3 className="font-grotesk text-lg font-bold text-brand-p1">Metode Seru, Hasil Nyata!</h3>
+                            <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+                                Jujur aja, banyak banget dari kita yang udah belajar bahasa Arab bertahun-tahun di sekolah tapi giliran disuruh ngomong... blank. Takut salah. Padahal udah hafal qowaid dan kosakatanya, tapi pas praktek rasanya kayak baru belajar dari nol lagi.
+Nah, itu yang bikin kita gerah dan akhirnya bikin Les Arab.
+                            </p>
+                            <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+                                Menurut kita, bahasa itu buat diucapin. Makanya di sini kamu bakal belajar bareng kakak-kakak pengajar muda alumni Timur Tengah yang seru, gampang diajak ngobrol, dan suportif abis — nggak bakal ngejudge kalau kamu salah ngomong.
+Misi kita simpel: bikin belajar bahasa Arab tuh serasa ngobrol sama temen sehari-hari. Biar rasa takut & grogi itu ilang, dan kamu jadi pede ngomong Arab kapan aja, InsyaAllah.
+                            </p>
+                        </div>
+
+                        <div className="bg-brand-s3 rounded-2xl p-5 border border-brand-s1/20 space-y-3">
+                            <h4 className="font-grotesk font-bold text-sm text-slate-800 flex items-center gap-1.5">
+                                <i className="fa-solid fa-graduation-cap text-brand-p2"></i> Di Bawah Naungan Ahlan Akademi
+                            </h4>
+                            <p className="text-xs text-slate-600 leading-relaxed">
+                                Les Arab adalah salah satu program resmi dari <strong>Ahlan Akademi</strong>, platform bimbel muqarrar (diktat kuliah) Universitas Al-Azhar Mesir yang udah dipercaya 1000+ mahasiswa sejak 2024, dengan bimbingan 30+ muqarrar buat mahasiswa Indonesia di Mesir.
+Dengan reputasi itu, insyaAllah kualitas pengajaran & kurikulum di Les Arab juga terjaga mutunya.
+                            </p>
+                        </div>
+
+                        <div className="space-y-3">
+                            <h4 className="font-grotesk text-base font-bold text-slate-800">Kenapa Kamu Bakal Nyaman Belajar di Les Arab?</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-600">
+                                <div className="flex gap-2">
+                                    <span className="text-brand-p2">🤝</span>
+                                    <span>Tutor-nya ramah, bukan guru killer. Nggak ada tuh suasana tegang yang bikin kamu takut salah..</span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <span className="text-brand-p2">🎯</span>
+                                    <span>Materinya related sama kehidupan kamu. Bahas hal-hal yang deket sama tren, hobi, dan keseharian Gen Z.</span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <span className="text-brand-p2">🌱</span>
+                                    <span>Salah ngucapin? Santai aja, di sini nggak ada yang bakal ngeledek pelafalan kamu.</span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <span className="text-brand-p2">💯</span>
+                                    <span>Fokus utama: lancar ngomong (muhadatsah). Dari menit pertama juga langsung diajak interaktif.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {/* --- CTA DAFTAR --- */}
+                    <div className="text-center space-y-3 pt-2">
+                        <a 
+                            href={LINKS.tallyForm}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-glow inline-block text-white font-grotesk font-bold text-lg px-8 py-4.5 rounded-2xl transition-all text-center"
+                        >
+                            🚀 Gas Daftar Sekarang
+                        </a>
+                        <div className="flex flex-wrap justify-center gap-2">
+                            <span className="bg-brand-s3 text-brand-p2 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full border border-brand-s1/25">🎁 GRATIS pertemuan pertama </span>
+                            <span className="bg-brand-s3 text-brand-p2 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full border border-brand-s1/25">✅ Bebas biaya pendaftaran</span>
+                        </div>
+                    </div>
+
+                </div>
+            );
+        }
+
+        /* =========================================================================
+           4. GURU / PENGAJAR VIEW
+           ========================================================================= */
+        function GuruView({ navigateTo, LINKS }) {
+            return (
+                <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+                    
+                    <div className="text-center space-y-2">
+                        <span className="text-xs text-brand-p2 font-grotesk font-bold uppercase tracking-widest bg-brand-s3 px-3 py-1 rounded-full">
+                            Kenalan dengan Guru
+                        </span>
+                        <h2 className="font-grotesk text-2xl md:text-3xl font-extrabold text-brand-p1">Para Tutor Alumni Timur Tengah</h2>
+                        <p className="text-xs text-slate-500 max-w-md mx-auto">Tutor kami adalah pengajar muda bersertifikasi yang asyik, komunikatif, & bebas cara mengajar kaku.</p>
+                    </div>
+
+                    <div className="bg-brand-p1 text-white p-5 rounded-3xl text-center space-y-3 shadow-md">
+                        <h3 className="font-grotesk font-bold text-base">Standar Kualifikasi Pengajar Kami:</h3>
+                        <div className="flex flex-wrap justify-center gap-3 text-xs font-semibold">
+                            <span className="bg-brand-p2 px-3 py-1 rounded-full border border-brand-s1/20">🎓 S1 Bahasa Arab / Timur Tengah</span>
+                            <span className="bg-brand-p2 px-3 py-1 rounded-full border border-brand-s1/20">📋 Lolos Seleksi Ketat</span>
+                            <span className="bg-brand-p2 px-3 py-1 rounded-full border border-brand-s1/20">🎙️ Teruji Micro-Teaching Interaktif</span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                        
+                        <div className="bg-white rounded-2xl p-4 text-center border border-slate-100 shadow-md space-y-2">
+                            <div className="w-20 h-20 rounded-full mx-auto overflow-hidden bg-slate-100 border border-slate-200 relative">
+                                <span className="absolute inset-0 flex items-center justify-center text-3xl">👨‍🏫</span>
+                                <img src="tutorzahid.jpeg" alt="Kak Zahid" className="relative z-10 w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                            </div>
+                            <div>
+                                <h4 className="font-grotesk font-bold text-sm text-slate-800">Kak Ahmad Zahid, Lc.</h4>
+                                <p className="text-[10px] text-brand-p2 font-semibold">Universitas Al-Azhar, Mesir</p>
+                            </div>
+                            <p className="text-[10px] text-slate-400 italic">"Belajar bahasa Arab itu aslinya asyik banget kalau tau trik bicaranya, Syabab!"</p>
+                        </div>
+
+                        <div className="bg-white rounded-2xl p-4 text-center border border-slate-100 shadow-md space-y-2">
+                            <div className="w-20 h-20 rounded-full mx-auto overflow-hidden bg-slate-100 border border-slate-200 relative">
+                                <span className="absolute inset-0 flex items-center justify-center text-3xl">👩‍🏫</span>
+                                <img src="tutorazel.jpg" alt="Kak Azel" className="relative z-10 w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                            </div>
+                            <div>
+                                <h4 className="font-grotesk font-bold text-sm text-slate-800">Kak Muhammad Azely Khairil, Lc.</h4>
+                                <p className="text-[10px] text-brand-p2 font-semibold">Universitas Al-Azhar, Mesir</p>
+                            </div>
+                            <p className="text-[10px] text-slate-400 italic">"Gak usah takut salah ngomong, di kelas kakak kita semua belajar santai."</p>
+                        </div>
+
+                        <div className="bg-white rounded-2xl p-4 text-center border border-slate-100 shadow-md space-y-2">
+                            <div className="w-20 h-20 rounded-full mx-auto overflow-hidden bg-slate-100 border border-slate-200 relative">
+                                <span className="absolute inset-0 flex items-center justify-center text-3xl">👨‍🏫</span>
+                                <img src="tutornuzul.png" alt="Kak Nuzul" className="relative z-10 w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                            </div>
+                            <div>
+                                <h4 className="font-grotesk font-bold text-sm text-slate-800">Kak Nuzul Fadhli Ramadhan, Lc.</h4>
+                                <p className="text-[10px] text-brand-p2 font-semibold">IIU Malaysia</p>
+                            </div>
+                            <p className="text-[10px] text-slate-400 italic">"Metode interaktif bikin kita bisa menguasai ratusan kata tanpa rasa jenuh."</p>
+                        </div>
+
+                    </div>
+
+                    {/* --- CTA DAFTAR --- */}
+                    <div className="text-center space-y-3 pt-2">
+                        <a 
+                            href={LINKS.tallyForm}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-glow inline-block text-white font-grotesk font-bold text-lg px-8 py-4.5 rounded-2xl transition-all text-center"
+                        >
+                            🚀 Gas Daftar Sekarang
+                        </a>
+                        <div className="flex flex-wrap justify-center gap-2">
+                            <span className="bg-brand-s3 text-brand-p2 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full border border-brand-s1/25">🎁 GRATIS pertemuan pertama </span>
+                            <span className="bg-brand-s3 text-brand-p2 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full border border-brand-s1/25">✅ Bebas biaya pendaftaran</span>
+                        </div>
+                    </div>
+
+                </div>
+            );
+        }
+
+        /* =========================================================================
+           5. KONTAK / PENDAFTARAN VIEW (EMBED TALLY.SO / FALLBACK BUTTON)
+           ========================================================================= */
+        function KontakView({ LINKS }) {
+            return (
+                <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+                    
+                    <div className="text-center space-y-2">
+                        <span className="text-xs text-brand-p2 font-grotesk font-bold uppercase tracking-widest bg-brand-s3 px-3 py-1 rounded-full">
+                            Langkah Pendaftaran
+                        </span>
+                        <h2 className="font-grotesk text-2xl md:text-3xl font-extrabold text-brand-p1">Mulai Belajar Sekarang</h2>
+                        <p className="text-xs text-slate-500">Isi formulir pendaftaran di bawah ini buat amanin kuota belajarmu.</p>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-md">
+                        <h3 className="font-grotesk font-bold text-sm text-slate-800 mb-3 text-center">Alur Pendaftaran:</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-center text-xs">
+                            <div className="bg-brand-s3 p-3 rounded-xl border border-slate-50">
+                                <span className="text-lg">1️⃣</span>
+                                <p className="font-bold mt-1 text-slate-800">Isi Form</p>
+                                <p className="text-[10px] text-slate-500 mt-0.5">Lengkapi form pendaftaran di bawah.</p>
+                            </div>
+                            <div className="bg-brand-s3 p-3 rounded-xl border border-slate-50">
+                                <span className="text-lg">2️⃣</span>
+                                <p className="font-bold mt-1 text-slate-800">Verifikasi WA</p>
+                                <p className="text-[10px] text-slate-500 mt-0.5">Admin bakal hubungi untuk konfirmasi jadwal.</p>
+                            </div>
+                            <div className="bg-brand-s3 p-3 rounded-xl border border-slate-50">
+                                <span className="text-lg">3️⃣</span>
+                                <p className="font-bold mt-1 text-slate-800">Pembayaran</p>
+                                <p className="text-[10px] text-slate-500 mt-0.5">Lakukan pelunasan bulan pertama.</p>
+                            </div>
+                            <div className="bg-brand-s3 p-3 rounded-xl border border-slate-50">
+                                <span className="text-lg">4️⃣</span>
+                                <p className="font-bold mt-1 text-slate-800">Mulai Kelas</p>
+                                <p className="text-[10px] text-slate-500 mt-0.5">Kelas baru resmi dimulai 3 Agustus 2026!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 space-y-6">
+                        <div className="text-center space-y-4">
+                            <h3 className="font-grotesk text-xl font-bold text-brand-p1">Formulir Pendaftaran Resmi</h3>
+                            <p className="text-xs text-slate-500">
+                                Klik tombol ini untuk membuka formulir pendaftaran.
+                            </p>
+                            
+                            <div className="pt-2">
+                                <a 
+                                    href={LINKS.tallyForm}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-block bg-brand-s2 hover:bg-brand-s2/90 text-white font-grotesk font-bold text-lg px-8 py-5 rounded-2xl shadow-xl transition-all active:scale-95 text-center w-full"
+                                >
+                                    📝 Buka Formulir Pendaftaran
+                                </a>
+                            </div>
+
+                            <p className="text-[10px] text-slate-400">
+                                Ada kendala saat mengisi formulir? Jangan khawatir! Hubungi <a href={LINKS.whatsapp} target="_blank" rel="noopener noreferrer" className="text-brand-p2 underline font-semibold">WhatsApp Admin</a> ya!.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            );
+        }
+
+        // Mount React App
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+
+</body>
+</html>
